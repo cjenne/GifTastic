@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Giftastic</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+  <style type="text/css">
+    button,
+    div,
+    form,
+    input {
+      margin: 10px;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>Powered By GIPHY</h1>
+    <!-- Rendered Buttons will get Dumped Here  -->
+    <div id="topicsButton"></div>
+
+    <form>
+      <label for="topic-input">Add your favorite Cartoon</label>
+      <input type="text" id="topic-input">
+      <br>
+
+      <!-- Button triggers new topic to be added -->
+      <input id="add-topic" type="submit" value="Add your favorite Cartoon">
+    </form>
+
+    <!-- Topics will Get Dumped Here -->
+    <div id="giphy-view"></div>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      // Instructions
+      // Before you can make any part of our site work, you need to create an array of strings, each one related to a topic that interests you. Save it to a variable called topics.
+      // We chose animals for our theme, but you can make a list to your own liking.
+
+      var topics = ['Futurama', 'Disenchantment', 'BoJack Horseman', 'Archer', 'The Venture Bros.', 'Space Ghost Coast to Coast', 'Sealab 2020', 'South Park'];
+
+      // Your app should take the topics in this array and create buttons in your HTML.
+      // Try using a loop that appends a button for each string in the array.
+
+      // When the user clicks on a button, the page should grab 10 static, non-animated gif images from the GIPHY API and place them on the page.
+
+      // API key is T8PKMz3AmGpoH3Sb3CxJzCCweALxQ2LB - pulled API format from site adding API, place for topic to be added to search, and changing the limit to 10.  The topic chosen will display the 10 images in the giphy view div id  
+
+      function displayTenStaticImages() {
+
+        var topic = $(this).attr("data");
+        var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + topic + "&api_key=T8PKMz3AmGpoH3Sb3CxJzCCweALxQ2LB&limit=10";
+        //queryURL.done(function (data) { console.log("success got data", data); });
+
+        $.ajax({
+          url: queryURL,
+          method: "GET"
+        }).then(function (response) {
+          // RE:  BONUS: // Each request should ADD 10 gifs to the page, NOT overwrite the existing gifs. - in order to do this you can remove the below empty()
+          $("#giphy-view").empty();
+          //added for loop to have identifier for each image loaded
+          for (var i = 0; i < response.data.length; i++) {
+            // This data is provided by the GIPHY API. (response.data and properties)
+            //create div for topic to load under giffy-view
+            var topicDiv = $("<div class='topic, col-md-3, image-fluid' style=float:left>");
+            //loading image first per instructions
+            // var imageURL = response.data.images.fixed_height_still.url 
+            // var image = $("<img>").attr("src",imageURL); 
+            // or written as
+            var imageDisplay = $("<img>").attr("src", response.data[i].images.fixed_height_still.url).addClass("GraphicalInterchangeFormat").attr("data-still", response.data[i].images.fixed_height_still.url).attr("data-animate", response.data[i].images.fixed_height.url);
+            //per instructions - Under every gif, display its rating (PG, G, so on). Created rating variable and element to have rating displayed as text. 
+            //this is one option....I am goint to comment this out to combine it into one line
+            // var rating = response.rating;
+            // var p = $("<p>").text("Rating: " + rating); 
+            var ratingDisplay = $("<p>").text("Rating: " + response.data[i].rating);
+// List additional metadata (title, tags, etc) for each gif in a clean and readable format.
+            var titleDisplay = $("<p>").text("Title: " + response.data[i].title);
+            
+            //appending the images and ratings to each topic
+            topicDiv.append(imageDisplay, ratingDisplay, titleDisplay);
+
+            $("#giphy-view").prepend(topicDiv);
+
+          }
+          $(".GraphicalInterchangeFormat").on('click', function () {
+            var state = $(this).attr('data-state');
+            // if (state == 'still') {
+            //   $(this).attr('src', $(this).attr("data-animate"));
+            //   $(this).attr('data-state', 'animate');
+            // } else {
+            //   $(this).attr('src', $(this).attr("data-still"));
+            //   $(this).attr('data-state', 'still');
+            // }});
+            if (state == 'animate') {
+              $(this).attr('src', $(this).attr("data-still"));
+              $(this).attr('data-state', 'still');
+            } else {
+              $(this).attr('src', $(this).attr("data-animate"));
+              $(this).attr('data-state', 'animate');
+            }});
+        
+        });
+        }
+          // When the user clicks one of the still GIPHY images, the gif should animate. If the user clicks the gif again, it should stop playing.
+          //applied class to image above to select image - used on click event on selected image to change attribute from  still to animate same as pausing gifs exercise
+
+
+
+//from working movie app exercise created button for each topic using a for loop and applied it to topics button id div in html
+
+function renderButtons() {
+  $("#topicsButton").empty();
+  for (var i = 0; i < topics.length; i++) {
+    var button = $("<button>").addClass("topic-btn").attr("data", topics[i]).text(topics[i]);
+    $("#topicsButton").append(button);
+  }
+};
+
+// Add a form to your page takes the value from a user input box and adds it into your topics array. Then make a function call that takes each topic in the array remakes the buttons on the page.
+
+$( document ).ready(function() {
+
+    // Allow users to request additional gifs to be added to the page.
+
+  $("#add-topic").on("click", function (event) {
+    event.preventDefault();
+    var topic = $("#topic-input").val().trim();
+    topics.push(topic);
+    renderButtons();
+  });
+
+  //adding click event listner for class topic-btn in above loop
+  $(document).on("click", ".topic-btn", displayTenStaticImages);
+
+  renderButtons();
+});
+// Ensure your app is fully mobile responsive.
+    </script>
+
+</body>
+
+</html>
+
+<!-- 
+// Deploy your assignment to Github Pages.
+// Rejoice! You just made something really cool.
+
+// Minimum Requirements
+
+// Attempt to complete homework assignment as described in instructions. If unable to complete certain portions, please
+pseudocode these portions to describe what remains to be completed. Adding a README.md as well as adding this homework
+to your portfolio are required as well and more information can be found below.
+
+
+// Reminder: Submission on BCS
+
+// Please submit both the deployed Github.io link to your homework AND the link to the Github Repository!
+
+// Create a README.md
+
+// Add a README.md to your repository describing the project. Here are some resources for creating your README.md. Here
+are some resources to help you along the way:
+
+// About READMEs
+// Mastering Markdown --> 
